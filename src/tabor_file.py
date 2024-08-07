@@ -54,11 +54,16 @@ class TaborFile(object):
                 fields.append(field.as_psql())
 
             if layer.get_pk_field():
-                pk_query = f"""PRIMARY KEY ({layer.get_pk_field()}))"""
+                pk_query = f""", PRIMARY KEY ({layer.get_pk_field()}))"""
             else:
                 pk_query = ""
 
-            result[layer.name]["schema"] = f"""CREATE TABLE IF NOT EXISTS "{layer.schema}"."{layer.name}" ({", ".join(fields)}, geom geometry, {pk_query});"""
+            if layer.geometry:
+                geom_query = """, geom geometry"""
+            else:
+                geom_query = ""
+
+            result[layer.name]["schema"] = f"""CREATE TABLE IF NOT EXISTS "{layer.schema}"."{layer.name}" ({", ".join(fields)}{geom_query}{pk_query});"""
             result[layer.name]["owner"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" OWNER TO {layer.owner};"""
 
             if layer.geometry:
