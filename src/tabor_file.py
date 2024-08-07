@@ -54,7 +54,7 @@ class TaborFile(object):
                 fields.append(field.as_psql())
 
             if layer.get_pk_field():
-                pk_query = f""", PRIMARY KEY ({layer.get_pk_field()}))"""
+                pk_query = f""", PRIMARY KEY ({layer.get_pk_field()})"""
             else:
                 pk_query = ""
 
