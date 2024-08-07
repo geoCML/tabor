@@ -5,13 +5,13 @@ from src.tabor_layer import TaborLayer
 
 
 class TaborFile(object):
-    def __init__(self, path: str, psql: None | list[str] = None) -> None:
+    tabor = "0.1.0"  # Version number
+    layers: list[TaborLayer] = []
+
+    def __init__(self, path: str, psql_data: dict | None = None) -> None:
         self.path = path
 
-        self.tabor = "0.1.0"  # Version number
-        self.layers: list[TaborLayer] = []
-
-        if not psql:
+        if not psql_data:
             try:
                 with open(self.path, "r") as src:
                     yml = safe_load(src)
@@ -19,32 +19,28 @@ class TaborFile(object):
                         raise Exception(f"Your .tabor file uses version {yml["tabor"]}, which is out of date with the current version {self.tabor}")
 
                     for layer in yml["layers"]:
-                        self.add_layer(layer["name"], layer["schema"], layer["geometry"], layer["owner"], layer["fields"])
+                        try:
+                            geometry = layer["geometry"]
+                        except KeyError:
+                            geometry = None
+
+                        self.add_layer(layer["name"], layer["schema"], geometry, layer["owner"], layer["fields"])
 
             except FileNotFoundError:
                 raise Exception(f"Failed to read .tabor file at {self.path}, does that path exist?")
             except KeyError as e:
                 raise Exception(f"Missing attribute in .tabor file: {str(e)}")
         else:
-            for query in psql:
-                layers = re.findall(fr"""CREATE TABLE IF NOT EXISTS "([a-zA-Z]+)"\."([a-zA-Z]+)" \((.*),+ PRIMARY KEY \((\S+)\)\);ALTER TABLE "[a-zA-Z]+"\."[a-zA-Z]+" OWNER TO (\S+);""", query)
-                if not layers:
-                    raise Exception(f"PostGIS query '{query}' is not valid")
+            for table, values  in psql_data.items():
+                try:
+                    geom = values["geometry"]
+                except KeyError:
+                    geom = None
 
-                for layer in layers:
-                    fields = []
-                    for field in layer[2].split(", "):
-                        field_dict = {}
-                        attrs = field.split(" ")
-                        field_dict["name"] = attrs[0]
-                        field_dict["type"] = attrs[1]
-                        field_dict["pk"] = False if attrs[0] != layer[3] else True
-                        fields.append(field_dict)
-
-                    self.add_layer(layer[1], layer[0], "polyline", layer[4], fields)  # TODO: infer the geometry type
+                self.add_layer(table.split(".")[1], table.split(".")[0], geom, owner=values["owner"], fields=values["fields"])
 
 
-    def add_layer(self, name: str, schema: str, geometry: str, owner: str, fields: dict) -> TaborLayer:
+    def add_layer(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict) -> TaborLayer:
         self.layers.append(TaborLayer(name, schema, geometry, owner, fields))
         return self.layers[len(self.layers) - 1]
 
@@ -56,9 +52,18 @@ class TaborFile(object):
             fields = []
             for field in layer.fields:
                 fields.append(field.as_psql())
-            result[layer.name]["schema"] = f"""CREATE TABLE IF NOT EXISTS "{layer.schema}"."{layer.name}" ({", ".join(fields)}, geom geometry, PRIMARY KEY ({layer.get_pk_field()}));"""
+
+            if layer.get_pk_field():
+                pk_query = f"""PRIMARY KEY ({layer.get_pk_field()}))"""
+            else:
+                pk_query = ""
+
+            result[layer.name]["schema"] = f"""CREATE TABLE IF NOT EXISTS "{layer.schema}"."{layer.name}" ({", ".join(fields)}, geom geometry, {pk_query});"""
             result[layer.name]["owner"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" OWNER TO {layer.owner};"""
-            result[layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""
+
+            if layer.geometry:
+                result[layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""
+
         return result
 
 

@@ -12,13 +12,13 @@ layers:
   geometry: point
   fields:
   - name: fid
-    type: int8
+    type: int
     pk: true
   - name: genus
-    type: varchar
+    type: text
     pk: false
   - name: species
-    type: varchar
+    type: text
     pk: false
   - name: height_meters
     type: double
@@ -33,7 +33,7 @@ layers:
   geometry: polyline
   fields:
     - name: fid
-      type: int8
+      type: int
       pk: true
 ```
 
@@ -46,4 +46,5 @@ Tabor v0.1.0 can be downloaded directly from this repository (under Releases). A
 # Usage
 
 `tabor read --file <path/to/file>` -> Converts a .tabor file into a PostGIS schema query.
-`tabor write --file <path/to/file> --queries 'query 1' 'query 2'` -> Converts a PostGIS schema query into a .tabor file. (WIP Feature)'
+
+`tabor write --file <path/to/file> --db <name_of_psql_db> --username <name of db user> --password <password of db user?> --host <host of psql db?> --port <port of psql db?>` -> Converts a PostGIS schema query into a .tabor file. (WIP Feature)'
