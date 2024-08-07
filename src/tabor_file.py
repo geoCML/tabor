@@ -2,10 +2,10 @@ import re
 from yaml import safe_dump, safe_load
 
 from src.tabor_layer import TaborLayer
+from src.consts import VERSION
 
 
 class TaborFile(object):
-    tabor = "0.1.0"  # Version number
     layers: list[TaborLayer] = []
 
     def __init__(self, path: str, psql_data: dict | None = None) -> None:
@@ -15,8 +15,8 @@ class TaborFile(object):
             try:
                 with open(self.path, "r") as src:
                     yml = safe_load(src)
-                    if yml["tabor"] != self.tabor:
-                        raise Exception(f"Your .tabor file uses version {yml["tabor"]}, which is out of date with the current version {self.tabor}")
+                    if yml["tabor"] != VERSION:
+                        raise Exception(f"Your .tabor file uses version {yml["tabor"]}, which is out of date with the current version {VERSION}")
 
                     for layer in yml["layers"]:
                         try:
@@ -87,6 +87,6 @@ class TaborFile(object):
             layers_as_dict.append(layer.as_dict())
 
         return {
-            "tabor": self.tabor,
+            "tabor": VERSION,
             "layers": layers_as_dict
         }

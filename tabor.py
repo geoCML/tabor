@@ -5,6 +5,8 @@ from src.db_connector import DBConnector
 
 import sys
 
+from src.consts import VERSION
+
 sys.tracebacklimit = -1
 
 
@@ -47,7 +49,8 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
 if __name__ == "__main__":
     parser = ArgumentParser(description='tabor <command> <flags>')
     parser.add_argument('command', help='`read`: Converts a .tabor file into a PostGIS schema query.\n' +
-                                        '`write`: Converts a PostGIS database into a .tabor file.\n')
+                                        '`write`: Converts a PostGIS database into a .tabor file.\n' +
+                                        '`version`: Show the current installed version of Tabor.\n')
     parser.add_argument('--file', help='The path to the .tabor file.')
     parser.add_argument('--db', help='The name of the PostGIS database to connect to.')
     parser.add_argument('--username', help='The username of a database user.')
@@ -72,6 +75,8 @@ if __name__ == "__main__":
             raise Exception("You must provide a PostGIS database user to connect to your database (--username)")
 
         write(args.file, args.db, args.username, args.password, args.host, args.port)
+    elif args.command == "version":
+        print(VERSION)
     else:
         raise Exception(f"No idea what '{args.command}' is!")
 
