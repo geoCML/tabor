@@ -16,16 +16,12 @@ layers:
     pk: true
   - name: genus
     type: text
-    pk: false
   - name: species
     type: text
-    pk: false
   - name: height_meters
     type: double
-    pk: false
   - name: circumference_cm
     type: double
-    pk: false
 
 - name: streams
   schema: public
@@ -47,4 +43,4 @@ Tabor v0.1.0 can be downloaded directly from this repository (under Releases). A
 
 `tabor read --file <path/to/file>` -> Converts a .tabor file into a PostGIS schema query.
 
-`tabor write --file <path/to/file> --db <name_of_psql_db> --username <name of db user> --password <password of db user?> --host <host of psql db?> --port <port of psql db?>` -> Converts a PostGIS schema query into a .tabor file. (WIP Feature)'
+`tabor write --file <path/to/file> --db <name_of_psql_db> --username <name of db user> --password <password of db user?> --host <host of psql db?> --port <port of psql db?>` -> Converts a PostGIS database to a .tabor file'
