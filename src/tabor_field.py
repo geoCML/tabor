@@ -16,8 +16,12 @@ class TaborField(YAMLObject):
 
 
     def as_dict(self) -> dict:
-        return {
+        var_dict = {
             "name": self.name,
             "type": str(self.type),
-            "pk": self.pk
         }
+
+        if self.pk:
+            var_dict["pk"] = self.pk
+
+        return var_dict

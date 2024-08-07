@@ -17,7 +17,12 @@ class TaborLayer(object):
 
         try:
             for field in fields:
-                self.add_field(field["name"], field["type"], field["pk"])
+                try:
+                    pk = field["pk"]
+                except KeyError:
+                    pk = False
+
+                self.add_field(field["name"], field["type"], pk)
         except KeyError as e:
             raise Exception(f"Missing attribute in layer '{self.name}': {str(e)}")
 
