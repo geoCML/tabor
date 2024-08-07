@@ -67,7 +67,7 @@ class TaborFile(object):
             result[layer.name]["owner"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" OWNER TO {layer.owner};"""
 
             if layer.geometry:
-                result[layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""
+                result[layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""
 
         return result
 
