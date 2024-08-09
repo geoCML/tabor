@@ -1,5 +1,5 @@
 from yaml import YAMLObject
-from src.tabor_field_type import TaborFieldType
+from tabor_field_type import TaborFieldType
 
 
 class TaborField(YAMLObject):

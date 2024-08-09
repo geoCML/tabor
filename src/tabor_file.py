@@ -1,8 +1,8 @@
 import re
 from yaml import safe_dump, safe_load
 
-from src.tabor_layer import TaborLayer
-from src.consts import VERSION
+from tabor_layer import TaborLayer
+from consts import VERSION
 
 
 class TaborFile(object):

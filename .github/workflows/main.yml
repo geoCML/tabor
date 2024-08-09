@@ -1,10 +1,10 @@
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
-      - '.gitignore'
-      - 'LICENSE.md'
-      - 'README.md'
+      - ".gitignore"
+      - "LICENSE.md"
+      - "README.md"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -15,16 +15,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['windows-latest', 'ubuntu-latest', 'macos-latest']
+        os: ["windows-latest", "ubuntu-latest", "macos-latest"]
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.12.4
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.12.4
 
-    - run: pip install -r requirements.txt pyinstaller
-    - run: pyinstaller tabor.py
-    - uses: actions/upload-artifact@v2
-      with:
-        path: dist/*
+      - run: pip install -r requirements.txt pyinstaller
+      - run: pyinstaller --paths=./src -y ./src/tabor.py
+      - uses: actions/upload-artifact@v2
+        with:
+          path: dist/*

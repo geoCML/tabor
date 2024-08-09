@@ -1,11 +1,11 @@
 from argparse import ArgumentParser
 
-from src.tabor_file import TaborFile
-from src.db_connector import DBConnector
+from tabor_file import TaborFile
+from db_connector import DBConnector
 
 import sys
 
-from src.consts import VERSION
+from consts import VERSION
 
 sys.tracebacklimit = -1
 

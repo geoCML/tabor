@@ -1,5 +1,5 @@
-from src.geometry_type import GeometryType
-from src.tabor_field import TaborField
+from geometry_type import GeometryType
+from tabor_field import TaborField
 
 
 class TaborLayer(object):
