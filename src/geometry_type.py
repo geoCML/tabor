@@ -1,5 +1,5 @@
 class GeometryType(object):
-    postgis_polyline_types = ("POLYLINE", "Polyline")
+    postgis_polyline_types = ("POLYLINE", "Polyline", "Linestring", "LINESTRING")
     postgis_polygon_types = ("POLYGON", "Polygon")
     postgis_point_types = ("POINT", "Point")
     postgis_multi_polygon_types = ("MULTIPOLYGON", "Multipolygon")
