@@ -3,9 +3,10 @@ class GeometryType(object):
     postgis_polygon_types = ("POLYGON", "Polygon")
     postgis_point_types = ("POINT", "Point")
     postgis_multi_polygon_types = ("MULTIPOLYGON", "Multipolygon")
+    postgis_geometry_generic_types = ("GEOMETRY", "Geometry")
 
     def __init__(self, type: str):
-        self.valid_types = ("line", "multi polygon", "polygon", "point")
+        self.valid_types = ("line", "multi polygon", "polygon", "point", "geometry")
         self.set_type(type)
 
 
@@ -21,6 +22,9 @@ class GeometryType(object):
 
         if type in self.postgis_multi_polygon_types:
             return "multi polygon"
+
+        if type in self.postgis_geometry_generic_types:
+            return "geometry"
 
         return type
 
