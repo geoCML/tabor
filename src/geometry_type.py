@@ -6,7 +6,7 @@ class GeometryType(object):
     postgis_geometry_generic_types = ("GEOMETRY", "Geometry")
 
     def __init__(self, type: str):
-        self.valid_types = ("line", "multi polygon", "polygon", "point", "geometry")
+        self.valid_types = ("polyline", "multi polygon", "polygon", "point", "geometry")
         self.set_type(type)
 
 
