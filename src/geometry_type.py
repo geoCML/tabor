@@ -12,7 +12,7 @@ class GeometryType(object):
 
     def convert_postgis_geometry_to_geometry_type(self, type):
         if type in self.postgis_polyline_types:
-            return "line"
+            return "polyline"
 
         if type in self.postgis_polygon_types:
             return "polygon"
