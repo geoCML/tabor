@@ -3,7 +3,7 @@
 Tabor is a database modeling language for GIS based on YAML, but with additional syntax restrictions. The goal of the Tabor project is to allow GIS users to create and maintain complex database rules using plain-text configuration files. The following is an example of a Tabor configuration file for a PostGIS database:
 
 ```
-tabor: 0.1.0
+tabor: 0.1.1
 layers:
 
 - name: trees
@@ -37,7 +37,7 @@ Running this file through the Tabor command line utility generates a valid Postg
 
 # Downloading and Installing Tabor
 
-Tabor v0.1.0 can be downloaded directly from this repository (under Releases). After downloading, simply extract the downloaded .zip file to a directory accessible on your terminal path.
+Tabor v0.1.1 can be downloaded directly from this repository (under Releases). After downloading, simply extract the downloaded .zip file to a directory accessible on your terminal path.
 
 # Usage
 
