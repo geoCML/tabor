@@ -24,7 +24,13 @@ class TaborFile(object):
                         except KeyError:
                             geometry = None
 
-                        self.add_layer(layer["name"], layer["schema"], geometry, layer["owner"], layer["fields"])
+                        constraints: dict = {}
+                        try:
+                            constraints = layer["constraints"]
+                        except KeyError:
+                            pass
+
+                        self.add_layer(layer["name"], layer["schema"], geometry, layer["owner"], layer["fields"], constraints)
 
             except FileNotFoundError:
                 raise Exception(f"Failed to read .tabor file at {self.path}, does that path exist?")
@@ -37,11 +43,18 @@ class TaborFile(object):
                 except KeyError:
                     geom = None
 
-                self.add_layer(table.split(".")[1], table.split(".")[0], geom, owner=values["owner"], fields=values["fields"])
+
+                constraints: dict = {}
+                try:
+                    constraints = values["constraints"]
+                except KeyError:
+                    pass
+
+                self.add_layer(table.split(".")[1], table.split(".")[0], geom, values["owner"], values["fields"], constraints)
 
 
-    def add_layer(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict) -> TaborLayer:
-        self.layers.append(TaborLayer(name, schema, geometry, owner, fields))
+    def add_layer(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: dict) -> TaborLayer:
+        self.layers.append(TaborLayer(name, schema, geometry, owner, fields, constraints))
         return self.layers[len(self.layers) - 1]
 
 
@@ -65,6 +78,10 @@ class TaborFile(object):
 
             result[layer.name]["schema"] = f"""CREATE TABLE IF NOT EXISTS "{layer.schema}"."{layer.name}" ({", ".join(fields)}{geom_query}{pk_query});"""
             result[layer.name]["owner"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" OWNER TO {layer.owner};"""
+
+            result[layer.name]["constraints"] = []
+            for constraint in layer.constraints:
+                result[layer.name]["constraints"].append(str(constraint))
 
             if layer.geometry:
                 result[layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""

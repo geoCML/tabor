@@ -4,9 +4,9 @@ class GeometryType(object):
     postgis_point_types = ("POINT", "Point")
     postgis_multi_polygon_types = ("MULTIPOLYGON", "Multipolygon")
     postgis_geometry_generic_types = ("GEOMETRY", "Geometry")
+    valid_types = ("polyline", "multi polygon", "polygon", "point", "geometry")
 
     def __init__(self, type: str):
-        self.valid_types = ("polyline", "multi polygon", "polygon", "point", "geometry")
         self.set_type(type)
 
 

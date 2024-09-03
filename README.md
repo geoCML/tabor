@@ -6,6 +6,15 @@ Tabor is a database modeling language for GIS based on YAML, but with additional
 tabor: 0.1.2
 layers:
 
+- name: grass
+  schema: public
+  owner: geocml
+  geometry: polygon
+  fields:
+    - name: fid
+      type: int
+      pk: true
+
 - name: trees
   schema: public
   owner: geocml
@@ -22,6 +31,9 @@ layers:
     type: double
   - name: circumference_cm
     type: double
+  constraints:
+    - name: on
+      layer: grass
 
 - name: streams
   schema: public
