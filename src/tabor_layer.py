@@ -1,9 +1,10 @@
 from geometry_type import GeometryType
+from constraint import Constraint
 from tabor_field import TaborField
 
 
 class TaborLayer(object):
-    def __init__(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict) -> None:
+    def __init__(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: dict) -> None:
         self.name = name
         self.schema = schema
 
@@ -11,6 +12,11 @@ class TaborLayer(object):
             self.geometry = GeometryType(geometry)
         else:
             self.geometry = None
+
+        self.constraints: list[Constraint] = []
+        if constraints:
+            for constraint in constraints:
+                self.constraints.append(Constraint(constraint, self.name))
 
         self.owner = owner
         self.fields: list[TaborField] = []
