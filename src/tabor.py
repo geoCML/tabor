@@ -11,7 +11,7 @@ from consts import VERSION
 sys.tracebacklimit = -1
 
 
-def load(file_path: str, db: str, username: str, password: str, host: str, port: str):
+def load(file_path: str, db: str, username: str, password: str, host: str, port: str) -> None:
     try:
         db_connector = DBConnector(db, username, password, host, port)
 
@@ -40,7 +40,7 @@ def read(file_path: str) -> None:
     print(tabor_src.to_psql())
 
 
-def write(file_path: str, db: str, username: str, password: str, host: str, port: str) -> None:
+def write(file_path: str, db: str, username: str, password: str, host: str, port: str, ignore_tables: list) -> None:
     try:
         data = {}
         db_connector = DBConnector(db, username, password, host, port)
@@ -49,6 +49,9 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
         for table in tables:
             schema = table.split(".")[0]
             table_name = table.split(".")[1]
+
+            if table_name in ignore_tables:
+                continue
 
             data[table] = {}
             data[table]["fields"] = db_connector.get_fields_for_table(schema, table_name)
@@ -79,6 +82,8 @@ if __name__ == "__main__":
     parser.add_argument('--password', help='The password of a database user.', default=None)
     parser.add_argument('--host', help='The hostname of the PostGIS database to connect to.', default="localhost")
     parser.add_argument('--port', help='The port of the PostGIS database to connect to.', default=5432)
+    parser.add_argument('--ignore', nargs="+", help='Any tables to ignore when writing to the .tabor file.', default=[])
+
 
     args = parser.parse_args()
 
@@ -96,7 +101,7 @@ if __name__ == "__main__":
         if not args.username:
             raise Exception("You must provide a PostGIS database user to connect to your database (--username)")
 
-        write(args.file, args.db, args.username, args.password, args.host, args.port)
+        write(args.file, args.db, args.username, args.password, args.host, args.port, args.ignore)
     elif args.command == "load":
         if not args.file:
             raise Exception("You must provide one file to load from (--file)")
