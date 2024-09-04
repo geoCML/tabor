@@ -5,7 +5,8 @@ import psycopg2
 class DBConnector(object):
     def __init__(self, db: str, username: str, password: str, host: str, port: str) -> None:
         try:
-            self.cursor = psycopg2.connect(dbname=db, user=username, password=password, host=host, port=port).cursor()
+            self.connection = psycopg2.connect(dbname=db, user=username, password=password, host=host, port=port)
+            self.cursor = self.connection.cursor()
         except:
             raise Exception(f"Failed to connect to {host}:{port} as '{username}'")
 
@@ -67,3 +68,8 @@ class DBConnector(object):
     def get_triggers_for_table(self, table: str) -> set[str]:
         self.cursor.execute(f"""SELECT trigger_name FROM information_schema.triggers WHERE event_object_table = '{table}'""")
         return {trigger[0] for trigger in self.cursor.fetchall()}
+
+
+    def execute_commit_query(self, query: str) -> None:
+        self.cursor.execute(query)
+        self.connection.commit()

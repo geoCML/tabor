@@ -4,16 +4,37 @@ from tabor_file import TaborFile
 from db_connector import DBConnector
 
 import sys
+import json
 
 from consts import VERSION
 
 sys.tracebacklimit = -1
 
 
+def load(file_path: str, db: str, username: str, password: str, host: str, port: str):
+    try:
+        db_connector = DBConnector(db, username, password, host, port)
+
+        tabor_src = TaborFile(file_path)
+        psql = tabor_src.to_psql()
+
+        for _,layer in psql.items():
+            for _,value in layer.items():
+                if type(value) is list:
+                    for query in value:
+                        db_connector.execute_commit_query(query)
+                else:
+                    db_connector.execute_commit_query(value)
+
+        print(f"Loaded {file_path} to {db}")
+    except:
+        raise Exception("Failed to load .tabor file to PostGIS database")
+
+
 def read(file_path: str) -> None:
     try:
         tabor_src = TaborFile(file_path)
-    except Exception as e:
+    except:
         raise Exception("Failed to read .tabor file")
 
     print(tabor_src.to_psql())
@@ -50,6 +71,7 @@ if __name__ == "__main__":
     parser = ArgumentParser(description='tabor <command> <flags>')
     parser.add_argument('command', help='`read`: Converts a .tabor file into a PostGIS schema query.\n' +
                                         '`write`: Converts a PostGIS database into a .tabor file.\n' +
+                                        '`load`: Loads a PostGIS database from a .tabor file.\n' +
                                         '`version`: Show the current installed version of Tabor.\n')
     parser.add_argument('--file', help='The path to the .tabor file.')
     parser.add_argument('--db', help='The name of the PostGIS database to connect to.')
@@ -75,6 +97,17 @@ if __name__ == "__main__":
             raise Exception("You must provide a PostGIS database user to connect to your database (--username)")
 
         write(args.file, args.db, args.username, args.password, args.host, args.port)
+    elif args.command == "load":
+        if not args.file:
+            raise Exception("You must provide one file to load from (--file)")
+
+        if not args.db:
+            raise Exception("You must provide a PostGIS database to load into (--db)")
+
+        if not args.username:
+            raise Exception("You must provide a PostGIS database user to connect to your database (--username)")
+
+        load(args.file, args.db, args.username, args.password, args.host, args.port)
     elif args.command == "version":
         print(VERSION)
     else:
