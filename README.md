@@ -55,6 +55,6 @@ Tabor v0.2.0 can be downloaded directly from this repository (under Releases). A
 
 `tabor read --file <path/to/file>` -> Converts a .tabor file into a PostGIS schema query.
 
-`tabor write --file <path/to/file> --db <name_of_psql_db> --username <name of db user> --password <password of db user?> --host <host of psql db?> --port <port of psql db?>` -> Converts a PostGIS database to a .tabor file'
+`tabor write --file <path/to/file> --db <name_of_psql_db> --username <name of db user> --password <password of db user?> --host <host of psql db?> --port <port of psql db?> --ignore <tables to ignore?>` -> Converts a PostGIS database to a .tabor file'
 
 `tabor load --file <path/to/file> --db <name_of_psql_db> --username <name of db user> --password <password of db user?> --host <host of psql db?> --port <port of psql db?>` -> Loads a PostGIS database from a .tabor file.'
