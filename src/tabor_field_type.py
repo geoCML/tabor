@@ -4,7 +4,7 @@ class TaborFieldType(object):
     postgres_text_types = ("character varying", "name", "text")
 
     def __init__(self, type: str):
-        self.valid_types = ("text", "int", "double")
+        self.valid_types = ("text", "int", "numeric")
         self.set_type(type)
 
 
@@ -16,7 +16,7 @@ class TaborFieldType(object):
             return "text"
 
         if type in self.postgres_numerical_types:
-            return "double"
+            return "numeric"
 
         return type
 
