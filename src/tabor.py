@@ -31,7 +31,7 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
 
             data[table] = {}
             data[table]["fields"] = db_connector.get_fields_for_table(schema, table_name)
-
+            data[table]["constraints"] = db_connector.get_triggers_for_table(table_name)
 
             geom_type = db_connector.get_geometry_type_for_table(schema, table_name)
             if geom_type:
