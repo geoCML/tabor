@@ -4,7 +4,7 @@ from tabor_field import TaborField
 
 
 class TaborLayer(object):
-    def __init__(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: dict) -> None:
+    def __init__(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: list[dict]) -> None:
         self.name = name
         self.schema = schema
 
@@ -43,13 +43,17 @@ class TaborLayer(object):
                 return field.name
         return ""
 
+
     def as_dict(self) -> dict:
         var_dict = {
             "name": self.name,
             "schema": self.schema,
             "owner": self.owner,
-            "fields": [field.as_dict() for field in self.fields]
+            "fields": [field.as_dict() for field in self.fields],
         }
+
+        if self.constraints:
+            var_dict["constraints"] = [constraint.as_dict() for constraint in self.constraints]
 
         if self.geometry:
             var_dict["geometry"] = str(self.geometry)

@@ -62,3 +62,8 @@ class DBConnector(object):
             return ""
 
         return result[0]
+
+
+    def get_triggers_for_table(self, table: str) -> set[str]:
+        self.cursor.execute(f"""SELECT trigger_name FROM information_schema.triggers WHERE event_object_table = '{table}'""")
+        return {trigger[0] for trigger in self.cursor.fetchall()}

@@ -1,6 +1,7 @@
 import re
 from yaml import safe_dump, safe_load
 
+from constraint import Constraint, Trigger
 from tabor_layer import TaborLayer
 from consts import VERSION
 
@@ -24,9 +25,9 @@ class TaborFile(object):
                         except KeyError:
                             geometry = None
 
-                        constraints: dict = {}
+                        constraints: list[dict] = []
                         try:
-                            constraints = layer["constraints"]
+                            constraints: list[dict] = layer["constraints"]
                         except KeyError:
                             pass
 
@@ -43,17 +44,17 @@ class TaborFile(object):
                 except KeyError:
                     geom = None
 
-
-                constraints: dict = {}
+                derived_constraints: list[dict] = []
                 try:
-                    constraints = values["constraints"]
+                    for trigger in values["constraints"]:
+                        derived_constraints.append(Trigger(trigger).constraint.constraint)
                 except KeyError:
                     pass
 
-                self.add_layer(table.split(".")[1], table.split(".")[0], geom, values["owner"], values["fields"], constraints)
+                self.add_layer(table.split(".")[1], table.split(".")[0], geom, values["owner"], values["fields"], derived_constraints)
 
 
-    def add_layer(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: dict) -> TaborLayer:
+    def add_layer(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: list[dict]) -> TaborLayer:
         self.layers.append(TaborLayer(name, schema, geometry, owner, fields, constraints))
         return self.layers[len(self.layers) - 1]
 
