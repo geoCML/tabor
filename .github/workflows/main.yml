@@ -27,4 +27,5 @@ jobs:
       - run: pyinstaller --paths=./src -y ./src/tabor.py
       - uses: actions/upload-artifact@v4
         with:
+          name: Tabor ${{ matrix.os }}
           path: dist/*
