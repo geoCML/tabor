@@ -28,9 +28,9 @@ layers:
   - name: species
     type: text
   - name: height_meters
-    type: double
+    type: numeric
   - name: circumference_cm
-    type: double
+    type: numeric
   constraints:
     - name: on
       layer: grass
