@@ -25,6 +25,29 @@ class DBConnector(object):
         return tables
 
 
+    def get_groups(self) -> list[dict]:
+        groups = []
+        tables = self.get_tables()
+        for table in tables:
+            group = {}
+            split_table = table.split(".")
+            fields = self.get_fields_for_table(split_table[0], split_table[1])
+            for field in fields:
+                if "__fgid" in field["name"]:
+                    try:
+                        group[split_table[1]]
+                    except KeyError:
+                        group[split_table[1]] = {}
+                        group[split_table[1]]["layers"] = []
+                    group[split_table[1]]["layers"].append(field["name"].split("__fgid")[0])
+
+            if group:
+                groups.append(group)
+
+        return groups
+
+
+
     def get_fields_for_table(self, schema: str, table: str) -> list[dict]:
         fields = []
         self.cursor.execute(f"""SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = '{schema}' AND table_name = '{table}' AND column_name != 'geom';""")

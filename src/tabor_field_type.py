@@ -5,7 +5,8 @@ class TaborFieldType(object):
 
     def __init__(self, type: str):
         self.valid_types = ("text", "int", "numeric")
-        self.set_type(type)
+        if type != "":
+            self.set_type(type)
 
 
     def convert_postgres_type_to_tabor_field_type(self, type):
