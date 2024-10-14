@@ -1,10 +1,11 @@
 from geometry_type import GeometryType
 from constraint import Constraint
+from tabor_field_type import TaborFieldType
 from tabor_field import TaborField
 
 
 class TaborLayer(object):
-    def __init__(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: list[dict]) -> None:
+    def __init__(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: list[dict], group: str | None) -> None:
         self.name = name
         self.schema = schema
 
@@ -12,6 +13,11 @@ class TaborLayer(object):
             self.geometry = GeometryType(geometry)
         else:
             self.geometry = None
+
+        if group:
+            self.group = group
+        else:
+            self.group = None
 
         self.constraints: list[Constraint] = []
         if constraints:
@@ -37,11 +43,11 @@ class TaborLayer(object):
         self.fields.append(TaborField(name, type, pk))
 
 
-    def get_pk_field(self) -> str:
+    def get_pk_field(self) -> tuple[str, TaborFieldType]:
         for field in self.fields:
             if field.pk:
-                return field.name
-        return ""
+                return (field.name, field.type)
+        return ("", TaborFieldType(""))
 
 
     def as_dict(self) -> dict:
@@ -58,6 +64,9 @@ class TaborLayer(object):
         if self.geometry:
             var_dict["geometry"] = str(self.geometry)
 
+        if self.group:
+            var_dict["group"] = self.group
+
         return var_dict
 
 
@@ -72,3 +81,7 @@ class TaborLayer(object):
             "multi polygon": "Multipolygon"
         }
         return postgis_geometry_types[self.geometry.type]
+
+
+    def __str__(self) -> str:
+        return f"{self.schema}.{self.name}"

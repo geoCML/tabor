@@ -17,14 +17,20 @@ def load(file_path: str, db: str, username: str, password: str, host: str, port:
 
         tabor_src = TaborFile(file_path)
         psql = tabor_src.to_psql()
+        layers = psql["layers"]
+        groups = psql["groups"]
 
-        for _,layer in psql.items():
+        for _,layer in layers.items():
             for _,value in layer.items():
                 if type(value) is list:
                     for query in value:
                         db_connector.execute_commit_query(query)
                 else:
                     db_connector.execute_commit_query(value)
+
+        for _,group in groups.items():
+            for _,value in group.items():
+                db_connector.execute_commit_query(value)
 
         print(f"Loaded {file_path} to {db}")
     except:
@@ -45,12 +51,14 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
         data = {}
         db_connector = DBConnector(db, username, password, host, port)
         tables = db_connector.get_tables()
+        groups = db_connector.get_groups()
+        group_names = [list(group)[0] for group in groups]
 
         for table in tables:
             schema = table.split(".")[0]
             table_name = table.split(".")[1]
 
-            if table_name in ignore_tables:
+            if table_name in ignore_tables or table_name in group_names:
                 continue
 
             data[table] = {}
@@ -62,6 +70,11 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
                 data[table]["geometry"] = geom_type
 
             data[table]["owner"] = username
+
+            for group in groups:
+                for group_name,layers in group.items():
+                    if table_name in layers["layers"]:
+                        data[table]["group"] = group_name
 
         tabor_src = TaborFile(file_path, psql_data=data)
         tabor_src.write()
