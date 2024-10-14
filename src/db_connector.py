@@ -17,9 +17,19 @@ class DBConnector(object):
         self.cursor.execute("""SELECT schema_name FROM information_schema.schemata WHERE schema_name != 'pg_catalog' AND schema_name != 'information_schema';""")
         schemata = self.cursor.fetchall()
 
+        try:
+            self.cursor.execute("""SELECT * FROM raster_columns;""")
+            has_rasters = True
+        except:
+            has_rasters = False
+
         for schema in schemata:
             self.cursor.execute(f"""SELECT table_name FROM information_schema.tables WHERE table_schema = '{schema[0]}'""")
             for table in self.cursor.fetchall():
+                if has_rasters:
+                    self.cursor.execute(f"""SELECT * FROM raster_columns WHERE r_table_name = '{table[0]}' AND r_table_schema = '{schema[0]}';""")
+                    if self.cursor.fetchone():
+                        continue
                 tables.append(f"{schema[0]}.{table[0]}")
 
         return tables
