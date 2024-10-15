@@ -3,11 +3,11 @@ from tabor_field_type import TaborFieldType
 
 
 class TaborField(YAMLObject):
-    def __init__(self, name: str, type: str, pk: bool) -> None:
+    def __init__(self, name: str, type: str, udt_name: str, pk: bool) -> None:
         super().__init__()
 
         self.name = name
-        self.type = TaborFieldType(type)
+        self.type = TaborFieldType(type, udt_name)
         self.pk = pk
 
 

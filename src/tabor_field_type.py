@@ -1,13 +1,19 @@
 class TaborFieldType(object):
     postgres_integer_types = ("smallint", "integer", "bigint", "int2", "int4", "int8")
-    postgres_numerical_types = ("double precision", "float", "numeric")
+    postgres_numerical_types = ("double precision", "float", "numeric", "float8")
     postgres_text_types = ("character varying", "name", "text")
     postgres_binary_types = ("boolean")
-    postgres_collection_types = ("TEXT ARRAY", "text array")  # TODO: https://github.com/geoCML/tabor/issues/27
+    postgres_collection_types = ("ARRAY", "array")
     postgres_generic_types = ("USER-DEFINED", "user-defined")  # TODO: https://github.com/geoCML/tabor/issues/26
 
-    def __init__(self, type: str):
-        self.valid_types = ("text", "int", "numeric", "boolean", "text array", "user-defined")
+    def __init__(self, type: str, udt_name: str):
+        self.valid_types = ("text", "int", "numeric", "boolean", "int array", "text array", "numeric array", "boolean array", "user-defined")
+        self.udt_name = udt_name
+
+        if self.udt_name == "" and len(type.split(" ")) > 1:
+            self.udt_name = type.split(" ")[0]
+            type = type.split(" ")[1]
+
         if type != "":
             self.set_type(type)
 
@@ -26,7 +32,14 @@ class TaborFieldType(object):
             return "boolean"
 
         if type in self.postgres_collection_types:
-            return type.lower()
+            if "_" in self.udt_name:
+                fmt_udt_name = self.convert_postgres_type_to_tabor_field_type(self.udt_name.split("_")[1])
+            else:
+                fmt_udt_name = self.udt_name
+
+            if fmt_udt_name not in self.valid_types:
+                raise Exception(f"Literal '{fmt_udt_name}' is not a valid field type. Valid field types are {self.valid_types}")
+            return f"{fmt_udt_name} {type.lower()}"
 
         if type in self.postgres_generic_types:
             return "user-defined"

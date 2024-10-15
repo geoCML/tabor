@@ -34,20 +34,25 @@ class TaborLayer(object):
                 except KeyError:
                     pk = False
 
-                self.add_field(field["name"], field["type"], pk)
+                try:
+                    udt_name = field["udt_name"]
+                except KeyError:
+                    udt_name = ""
+
+                self.add_field(field["name"], field["type"], udt_name, pk)
         except KeyError as e:
             raise Exception(f"Missing attribute in layer '{self.name}': {str(e)}")
 
 
-    def add_field(self, name: str, type: str, pk: bool) -> None:
-        self.fields.append(TaborField(name, type, pk))
+    def add_field(self, name: str, type: str, udt_name: str, pk: bool) -> None:
+        self.fields.append(TaborField(name, type, udt_name, pk))
 
 
     def get_pk_field(self) -> tuple[str, TaborFieldType]:
         for field in self.fields:
             if field.pk:
                 return (field.name, field.type)
-        return ("", TaborFieldType(""))
+        return ("", TaborFieldType("", ""))
 
 
     def as_dict(self) -> dict:

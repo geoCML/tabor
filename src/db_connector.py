@@ -60,12 +60,13 @@ class DBConnector(object):
 
     def get_fields_for_table(self, schema: str, table: str) -> list[dict]:
         fields = []
-        self.cursor.execute(f"""SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = '{schema}' AND table_name = '{table}' AND column_name != 'geom';""")
+        self.cursor.execute(f"""SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_schema = '{schema}' AND table_name = '{table}' AND column_name != 'geom';""")
 
-        for field, type in self.cursor.fetchall():
+        for field, type, udt_name in self.cursor.fetchall():
             fields.append({
                 "name": field,
                 "type": type,
+                "udt_name": udt_name,
                 "pk": False
             })
 
@@ -81,10 +82,10 @@ class DBConnector(object):
                     fields.append({
                         "name": field[0],
                         "type": tmp_field["type"],
+                        "udt_name": tmp_field["udt_name"],
                         "pk": True
                     })
                     break
-
         return fields
 
 
