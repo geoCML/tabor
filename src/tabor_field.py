@@ -12,7 +12,7 @@ class TaborField(YAMLObject):
 
 
     def as_psql(self) -> str:
-        return f"{self.name} {self.type}"
+        return f"\"{self.name}\" {self.type}"
 
 
     def as_dict(self) -> dict:
