@@ -21,6 +21,7 @@ class DBConnector(object):
             self.cursor.execute("""SELECT * FROM raster_columns;""")
             has_rasters = True
         except:
+            self.rollback()
             has_rasters = False
 
         for schema in schemata:
@@ -97,6 +98,10 @@ class DBConnector(object):
             return ""
 
         return result[0]
+
+
+    def rollback(self):
+        self.connection.rollback()
 
 
     def get_triggers_for_table(self, table: str) -> set[str]:

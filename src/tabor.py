@@ -12,9 +12,9 @@ sys.tracebacklimit = -1
 
 
 def load(file_path: str, db: str, username: str, password: str, host: str, port: str) -> None:
-    try:
-        db_connector = DBConnector(db, username, password, host, port)
+    db_connector = DBConnector(db, username, password, host, port)
 
+    try:
         tabor_src = TaborFile(file_path)
         psql = tabor_src.to_psql()
         layers = psql["layers"]
@@ -34,6 +34,7 @@ def load(file_path: str, db: str, username: str, password: str, host: str, port:
 
         print(f"Loaded {file_path} to {db}")
     except:
+        db_connector.rollback()
         raise Exception("Failed to load .tabor file to PostGIS database")
 
 
@@ -47,9 +48,9 @@ def read(file_path: str) -> None:
 
 
 def write(file_path: str, db: str, username: str, password: str, host: str, port: str, ignore_tables: list) -> None:
+    db_connector = DBConnector(db, username, password, host, port)
     try:
         data = {}
-        db_connector = DBConnector(db, username, password, host, port)
         tables = db_connector.get_tables()
         groups = db_connector.get_groups()
         group_names = [list(group)[0] for group in groups]
@@ -80,6 +81,7 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
         tabor_src.write()
         print(f"Wrote .tabor file to {file_path}")
     except:
+        db_connector.rollback()
         raise Exception("Failed to write PostGIS database to a .tabor file")
 
 
