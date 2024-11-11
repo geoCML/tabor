@@ -15,7 +15,7 @@ class Constraint(object):
 
 
     def on(self, other_layer: str) -> str:
-        return f"""CREATE OR REPLACE FUNCTION {self.layer}_on_{other_layer}() RETURNS trigger AS $$ DECLARE overlap boolean; BEGIN SELECT Count(*) INTO overlap FROM {other_layer} WHERE ST_Contains({other_layer}.geom, NEW.geom); IF NOT overlap THEN RAISE EXCEPTION '{self.layer} is not on {other_layer}'; END IF; RETURN NEW; END; $$ LANGUAGE 'plpgsql'; CREATE CONSTRAINT TRIGGER {self.layer}_on_{other_layer} AFTER INSERT OR UPDATE ON {self.layer} FOR EACH ROW EXECUTE FUNCTION {self.layer}_on_{other_layer}();"""
+        return f"""CREATE OR REPLACE FUNCTION {self.layer}_on_{other_layer}() RETURNS trigger AS $$ DECLARE overlap boolean; BEGIN SELECT Count(*) INTO overlap FROM {other_layer} WHERE ST_Covers({other_layer}.geom, NEW.geom); IF NOT overlap THEN RAISE EXCEPTION '{self.layer} is not on {other_layer}'; END IF; RETURN NEW; END; $$ LANGUAGE 'plpgsql'; CREATE CONSTRAINT TRIGGER {self.layer}_on_{other_layer} AFTER INSERT OR UPDATE ON {self.layer} FOR EACH ROW EXECUTE FUNCTION {self.layer}_on_{other_layer}();"""
 
 
     def as_dict(self) -> dict:
