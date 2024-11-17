@@ -25,7 +25,11 @@ class Constraint(object):
         if not minimum:
             minimum = 0
 
-        return f"""CREATE OR REPLACE FUNCTION {self.layer}___length___{str(minimum).replace(".", "d")}_{str(maximum).replace(".", "d")}() RETURNS trigger AS $$ DECLARE length numeric; BEGIN SELECT ST_LENGTH(NEW.geom::geography) INTO length; IF length > {maximum} THEN RAISE EXCEPTION '{self.layer} is longer than {maximum}'; ELSE IF length < {minimum} THEN RAISE EXCEPTION '{self.layer} is shorter than {minimum}'; END IF; END IF; RETURN NEW; END; $$ LANGUAGE 'plpgsql'; CREATE CONSTRAINT TRIGGER {self.layer}___length___{str(minimum).replace(".", "d")}_{str(maximum).replace(".", "d")} AFTER INSERT OR UPDATE ON {self.layer} FOR EACH ROW EXECUTE FUNCTION {self.layer}___length___{str(minimum).replace(".", "d")}_{str(maximum).replace(".", "d")}();"""
+        return f"""CREATE OR REPLACE FUNCTION {self.layer}___length___{str(minimum).replace(".", "d")}__{str(maximum).replace(".", "d")}() RETURNS trigger AS $$ DECLARE length numeric; BEGIN SELECT ST_LENGTH(NEW.geom::geography) INTO length; IF length > {maximum} THEN RAISE EXCEPTION '{self.layer} is longer than {maximum}'; ELSE IF length < {minimum} THEN RAISE EXCEPTION '{self.layer} is shorter than {minimum}'; END IF; END IF; RETURN NEW; END; $$ LANGUAGE 'plpgsql'; CREATE CONSTRAINT TRIGGER {self.layer}___length___{str(minimum).replace(".", "d")}_{str(maximum).replace(".", "d")} AFTER INSERT OR UPDATE ON {self.layer} FOR EACH ROW EXECUTE FUNCTION {self.layer}___length___{str(minimum).replace(".", "d")}_{str(maximum).replace(".", "d")}();"""
+
+
+    def near(self, distance: float, other_layer: str):
+        return f"""CREATE OR REPLACE FUNCTION {self.layer}___near___{other_layer}__{str(distance).replace(".", "d")}() RETURNS trigger AS $$ DECLARE within boolean; BEGIN SELECT Count(*) INTO within FROM {other_layer} WHERE ST_DWithin({other_layer}.geom, NEW.geom, {distance}); IF NOT within THEN RAISE EXCEPTION '{self.layer} is too far from {other_layer}'; END IF; RETURN NEW; END; $$ LANGUAGE 'plpgsql'; CREATE CONSTRAINT TRIGGER {self.layer}___near___{other_layer}__{str(distance).replace(".", "d")} AFTER INSERT OR UPDATE ON {self.layer} FOR EACH ROW EXECUTE FUNCTION {self.layer}___near___{other_layer}__{str(distance).replace(".", "d")}();"""
 
 
     def as_dict(self) -> dict:
@@ -63,6 +67,21 @@ class Constraint(object):
 
             return self.length(maximum, minimum)
 
+        if self.constraint_type.type == "near":
+            try:
+                layer = self.constraint["layer"]
+            except KeyError:
+                raise Exception("Constraint 'near' needs a relative layer value")
+
+            if "distance" in self.constraint:
+                distance = self.constraint["distance"]
+                try:
+                    float(distance)
+                except ValueError:
+                    raise Exception(f"Value '{distance}' is not a numeric value")
+
+            return self.near(distance, layer)
+
         return ""
 
 
@@ -85,9 +104,15 @@ class Trigger(object):
         elif "___length___" in name:
             return Constraint({
                 "name": "length",
-                "minimum": float(name.split("___length___")[1].split("_")[0].replace("d", ".")),
-                "maximum": float(name.split("___length___")[1].split("_")[1].replace("d", "."))
+                "minimum": float(name.split("___length___")[1].split("__")[0].replace("d", ".")),
+                "maximum": float(name.split("___length___")[1].split("__")[1].replace("d", "."))
             }, name.split("___length___")[0])
+        elif "___near___" in name:
+            return Constraint({
+                "name": "near",
+                "layer": name.split("___near___")[1].split("__")[0],
+                "distance": float(name.split("___near___")[1].split("__")[1].replace("d", "."))
+            }, name.split("___near___")[0])
 
         raise Exception(f"Cannot derive a constraint from trigger '{name}'")
 
