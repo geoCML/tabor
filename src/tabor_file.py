@@ -35,13 +35,17 @@ class TaborFile(object):
                             pass
 
 
-                        group = ""
                         try:
                             group = layer["group"]
                         except KeyError:
-                            pass
+                            group = None
 
-                        self.add_layer(layer["name"], layer["schema"], geometry, layer["owner"], layer["fields"], constraints, group)
+                        try:
+                            srid = layer["srid"]
+                        except KeyError:
+                            srid = None
+
+                        self.add_layer(layer["name"], layer["schema"], geometry, layer["owner"], layer["fields"], constraints, group, srid)
 
             except FileNotFoundError:
                 raise Exception(f"Failed to read .tabor file at {self.path}, does that path exist?")
@@ -53,6 +57,11 @@ class TaborFile(object):
                     geom = values["geometry"]
                 except KeyError:
                     geom = None
+
+                try:
+                    srid = values["srid"]
+                except KeyError:
+                    srid = None
 
                 derived_constraints: list[dict] = []
                 try:
@@ -66,11 +75,12 @@ class TaborFile(object):
                     derived_group = values["group"]
                 except KeyError:
                     pass
-                self.add_layer(table.split(".")[1], table.split(".")[0], geom, values["owner"], values["fields"], derived_constraints, derived_group)
+
+                self.add_layer(table.split(".")[1], table.split(".")[0], geom, values["owner"], values["fields"], derived_constraints, derived_group, srid)
 
 
-    def add_layer(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: list[dict], group: str | None) -> TaborLayer:
-        layer = TaborLayer(name, schema, geometry, owner, fields, constraints, group)
+    def add_layer(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: list[dict], group: str | None, srid: str | None) -> TaborLayer:
+        layer = TaborLayer(name, schema, geometry, owner, fields, constraints, group, srid)
         if group:
             feature_group = self.add_or_get_group(group)
             feature_group.add_layer(layer)
@@ -114,7 +124,10 @@ class TaborFile(object):
                 result["layers"][layer.name]["constraints"].append(str(constraint))
 
             if layer.geometry:
-                result["layers"][layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""
+                if layer.srid:
+                    result["layers"][layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()}, {layer.srid});"""
+                else:
+                    result["layers"][layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""
 
         result["groups"] = {}
         for group in self.groups:
