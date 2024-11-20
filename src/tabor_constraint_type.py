@@ -1,5 +1,5 @@
 class TaborConstraintType(object):
-    valid_constraints = ("on", "length")
+    valid_constraints = ("on", "length", "near")
 
     def __init__(self, constraint: str) -> None:
         if constraint not in self.valid_constraints:
