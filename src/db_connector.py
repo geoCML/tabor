@@ -109,6 +109,11 @@ class DBConnector(object):
         return {trigger[0] for trigger in self.cursor.fetchall()}
 
 
+    def get_srid_for_table(self, schema: str, table: str) -> str:
+        self.cursor.execute(f"""SELECT Find_SRID('{schema}', '{table}', 'geom');""")
+        return self.cursor.fetchone()[0]
+
+
     def execute_commit_query(self, query: str) -> None:
         self.cursor.execute(query)
         self.connection.commit()

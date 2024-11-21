@@ -5,19 +5,16 @@ from tabor_field import TaborField
 
 
 class TaborLayer(object):
-    def __init__(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: list[dict], group: str | None) -> None:
+    def __init__(self, name: str, schema: str, geometry: str | None, owner: str, fields: dict, constraints: list[dict], group: str | None, srid: str | None) -> None:
         self.name = name
         self.schema = schema
+        self.srid = srid
+        self.group = group
 
         if geometry:
             self.geometry = GeometryType(geometry)
         else:
             self.geometry = None
-
-        if group:
-            self.group = group
-        else:
-            self.group = None
 
         self.constraints: list[Constraint] = []
         if constraints:
@@ -71,6 +68,9 @@ class TaborLayer(object):
 
         if self.group:
             var_dict["group"] = self.group
+
+        if self.srid:
+            var_dict["srid"] = self.srid
 
         return var_dict
 

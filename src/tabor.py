@@ -69,6 +69,9 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
             geom_type = db_connector.get_geometry_type_for_table(schema, table_name)
             if geom_type:
                 data[table]["geometry"] = geom_type
+                srid = db_connector.get_srid_for_table(schema, table_name)
+                if srid:
+                    data[table]["srid"] = srid
 
             data[table]["owner"] = username
 
