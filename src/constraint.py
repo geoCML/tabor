@@ -25,7 +25,7 @@ class Constraint(object):
         if not minimum:
             minimum = 0
 
-        return f"""CREATE OR REPLACE FUNCTION {self.layer}___length___{str(minimum).replace(".", "d")}__{str(maximum).replace(".", "d")}() RETURNS trigger AS $$ DECLARE length numeric; BEGIN SELECT ST_LENGTH(NEW.geom::geography) INTO length; IF length > {maximum} THEN RAISE EXCEPTION '{self.layer} is longer than {maximum}'; ELSE IF length < {minimum} THEN RAISE EXCEPTION '{self.layer} is shorter than {minimum}'; END IF; END IF; RETURN NEW; END; $$ LANGUAGE 'plpgsql'; CREATE CONSTRAINT TRIGGER {self.layer}___length___{str(minimum).replace(".", "d")}_{str(maximum).replace(".", "d")} AFTER INSERT OR UPDATE ON {self.layer} FOR EACH ROW EXECUTE FUNCTION {self.layer}___length___{str(minimum).replace(".", "d")}_{str(maximum).replace(".", "d")}();"""
+        return f"""CREATE OR REPLACE FUNCTION {self.layer}___length___{str(minimum).replace(".", "d")}__{str(maximum).replace(".", "d")}() RETURNS trigger AS $$ DECLARE length numeric; BEGIN SELECT ST_LENGTH(NEW.geom) INTO length; IF length > {maximum} THEN RAISE EXCEPTION '{self.layer} is longer than {maximum}'; ELSE IF length < {minimum} THEN RAISE EXCEPTION '{self.layer} is shorter than {minimum}'; END IF; END IF; RETURN NEW; END; $$ LANGUAGE 'plpgsql'; CREATE CONSTRAINT TRIGGER {self.layer}___length___{str(minimum).replace(".", "d")}_{str(maximum).replace(".", "d")} AFTER INSERT OR UPDATE ON {self.layer} FOR EACH ROW EXECUTE FUNCTION {self.layer}___length___{str(minimum).replace(".", "d")}__{str(maximum).replace(".", "d")}();"""
 
 
     def near(self, distance: float, other_layer: str):
