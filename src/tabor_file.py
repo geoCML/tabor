@@ -101,7 +101,7 @@ class TaborFile(object):
         result = {}
         result["layers"] = {}
         for layer in self.layers:
-            result["layers"][layer.name] = {}
+            result["layers"][f"{layer.schema}.{layer.name}"] = {}
             fields = []
             for field in layer.fields:
                 fields.append(field.as_psql())
@@ -116,18 +116,19 @@ class TaborFile(object):
             else:
                 geom_query = ""
 
-            result["layers"][layer.name]["schema"] = f"""CREATE TABLE IF NOT EXISTS "{layer.schema}"."{layer.name}" ({", ".join(fields)}{geom_query}{pk_query});"""
-            result["layers"][layer.name]["owner"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" OWNER TO {layer.owner};"""
+            result["layers"][f"{layer.schema}.{layer.name}"]["schema"] = f"""CREATE SCHEMA IF NOT EXISTS "{layer.schema}";"""
+            result["layers"][f"{layer.schema}.{layer.name}"]["table"] = f"""CREATE TABLE IF NOT EXISTS "{layer.schema}"."{layer.name}" ({", ".join(fields)}{geom_query}{pk_query});"""
+            result["layers"][f"{layer.schema}.{layer.name}"]["owner"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" OWNER TO {layer.owner};"""
 
-            result["layers"][layer.name]["constraints"] = []
+            result["layers"][f"{layer.schema}.{layer.name}"]["constraints"] = []
             for constraint in layer.constraints:
-                result["layers"][layer.name]["constraints"].append(str(constraint))
+                result["layers"][f"{layer.schema}.{layer.name}"]["constraints"].append(str(constraint))
 
             if layer.geometry:
                 if layer.srid:
-                    result["layers"][layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()}, {layer.srid});"""
+                    result["layers"][f"{layer.schema}.{layer.name}"]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()}, {layer.srid});"""
                 else:
-                    result["layers"][layer.name]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""
+                    result["layers"][f"{layer.schema}.{layer.name}"]["geometry"] = f"""ALTER TABLE "{layer.schema}"."{layer.name}" ALTER COLUMN geom TYPE Geometry({layer.derive_geometry_type()});"""
 
         result["groups"] = {}
         for group in self.groups:
