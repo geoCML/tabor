@@ -1,4 +1,5 @@
 from os import curdir
+from tabor_domain import TaborDomain
 import psycopg2
 
 
@@ -9,6 +10,21 @@ class DBConnector(object):
             self.cursor = self.connection.cursor()
         except:
             raise Exception(f"Failed to connect to {host}:{port} as '{username}'")
+
+    def get_domains(self) -> list[TaborDomain]:
+        domains = []
+        self.cursor.execute("""SELECT check_constraints FROM information_schema.check_constraints WHERE constraint_schema NOT IN ('information_schema', 'pg_catalog') AND constraint_name LIKE '%cvd_%' ORDER BY constraint_name;""")
+        check = self.cursor.fetchall()
+
+        self.cursor.execute("""SELECT domain_name, data_type FROM information_schema.domains WHERE domain_name LIKE '%cvd_%' ORDER BY domain_name;""")
+        user_domains = self.cursor.fetchall()
+
+        for i in range(len(user_domains)):
+            domain = TaborDomain(user_domains[i][0].split("cvd_")[1], [], user_domains[i][1])
+            domain.collect_constraint_values_from_psql(check[i][0])
+            domains.append(domain)
+
+        return domains
 
 
     def get_tables(self) -> list[str]:

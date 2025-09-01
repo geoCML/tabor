@@ -4,6 +4,7 @@ from yaml import safe_dump, safe_load
 from constraint import Constraint, Trigger
 from feature_group import FeatureGroup
 from tabor_layer import TaborLayer
+from tabor_domain import TaborDomain
 from consts import VERSION
 
 
@@ -11,6 +12,7 @@ class TaborFile(object):
     # TODO: Use hashmaps!
     groups: list[FeatureGroup] = []
     layers: list[TaborLayer] = []
+    domains: list[TaborDomain] = []
 
     def __init__(self, path: str, psql_data: dict | None = None) -> None:
         self.path = path
@@ -21,6 +23,24 @@ class TaborFile(object):
                     yml = safe_load(src)
                     if yml["tabor"] != VERSION:
                         raise Exception(f"Your .tabor file uses version {yml["tabor"]}, which is out of date with the current version {VERSION}")
+
+                    for domain in yml["domains"]:
+                        try:
+                            name = domain["name"]
+                        except KeyError:
+                            raise Exception("Domain must have a name.")
+
+                        try:
+                            data_type = domain["type"]
+                        except KeyError:
+                            raise Exception("Domain must have a type.")
+
+                        try:
+                            values = domain["values"]
+                        except KeyError:
+                            raise Exception("Domain must have values.")
+
+                        self.domains.append(TaborDomain(name, values, data_type))
 
                     for layer in yml["layers"]:
                         try:
@@ -33,7 +53,6 @@ class TaborFile(object):
                             constraints: list[dict] = layer["constraints"]
                         except KeyError:
                             pass
-
 
                         try:
                             group = layer["group"]
@@ -100,6 +119,11 @@ class TaborFile(object):
     def to_psql(self) -> dict:
         result = {}
         result["layers"] = {}
+
+        for domain in self.domains:
+            result["domains"] = {}
+            result["domains"][domain.name] = f"""DROP DOMAIN IF EXISTS cvd_{domain.name}; CREATE DOMAIN cvd_{domain.name} AS {domain.type} CHECK (VALUE in {domain.values});"""
+
         for layer in self.layers:
             result["layers"][f"{layer.schema}.{layer.name}"] = {}
             fields = []
@@ -153,7 +177,12 @@ class TaborFile(object):
         for layer in self.layers:
             layers_as_dict.append(layer.as_dict())
 
+        domains_as_dict = []
+        for domain in self.domains:
+            domains_as_dict.append(domain.as_dict())
+
         return {
             "tabor": VERSION,
-            "layers": layers_as_dict
+            "domains": domains_as_dict,
+            "layers": layers_as_dict,
         }
