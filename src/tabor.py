@@ -19,6 +19,10 @@ def load(file_path: str, db: str, username: str, password: str, host: str, port:
         psql = tabor_src.to_psql()
         layers = psql["layers"]
         groups = psql["groups"]
+        domains = psql["domains"]
+
+        for _,query in domains.items():
+            db_connector.execute_commit_query(query)
 
         for _,layer in layers.items():
             for _,value in layer.items():
@@ -29,8 +33,8 @@ def load(file_path: str, db: str, username: str, password: str, host: str, port:
                     db_connector.execute_commit_query(value)
 
         for _,group in groups.items():
-            for _,value in group.items():
-                db_connector.execute_commit_query(value)
+            for _,query in group.items():
+                db_connector.execute_commit_query(query)
 
         print(f"Loaded {file_path} to {db}")
     except:
@@ -53,6 +57,7 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
         data = {}
         tables = db_connector.get_tables()
         groups = db_connector.get_groups()
+        domains = db_connector.get_domains()
         group_names = [list(group)[0] for group in groups]
 
         for table in tables:
@@ -81,6 +86,7 @@ def write(file_path: str, db: str, username: str, password: str, host: str, port
                         data[table]["group"] = group_name
 
         tabor_src = TaborFile(file_path, psql_data=data)
+        tabor_src.domains = domains
         tabor_src.write()
         print(f"Wrote .tabor file to {file_path}")
     except:
