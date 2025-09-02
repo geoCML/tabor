@@ -95,6 +95,13 @@ class TaborFile(object):
                 except KeyError:
                     pass
 
+                formatted_fields = {}
+                for field in values["fields"]:
+                    if "time " in field["type"]:
+                        field["type"] = "time"
+                    elif "timestamp" in field["type"]:
+                        field["type"] = "timestamp"
+
                 self.add_layer(table.split(".")[1], table.split(".")[0], geom, values["owner"], values["fields"], derived_constraints, derived_group, srid)
 
 

@@ -5,9 +5,10 @@ class TaborFieldType(object):
     postgres_binary_types = ("boolean")
     postgres_collection_types = ("ARRAY", "array")
     postgres_generic_types = ("USER-DEFINED", "user-defined")  # TODO: https://github.com/geoCML/tabor/issues/26
+    postgres_temporal_types = ("timestamp", "date", "time")
 
     def __init__(self, type: str, udt_name: str):
-        self.valid_types = ("text", "int", "numeric", "boolean", "int array", "text array", "numeric array", "boolean array", "user-defined")
+        self.valid_types = ("text", "int", "numeric", "boolean", "int array", "text array", "numeric array", "boolean array", "user-defined", "date", "time", "timestamp")
         self.udt_name = udt_name
 
         if self.udt_name == "" and len(type.split(" ")) > 1:
